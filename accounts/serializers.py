@@ -21,7 +21,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
-            "phone_number",
+            "phone",
             "password",
             "password2",
         )
@@ -58,14 +58,11 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
-            "phone_number",
-            "bio",
-            "date_of_birth",
-            "is_verified",
+            "phone",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "is_verified", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
 
     def validate_email(self, value):
         email = value.strip().lower()
@@ -73,6 +70,13 @@ class UserSerializer(serializers.ModelSerializer):
         if qs.exists():
             raise serializers.ValidationError("A user with this email already exists.")
         return email
+
+    def validate_phone(self, value):
+        phone = value.strip().lower()
+        qs = User.objects.filter(phone__iexact=phone).exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("A user with this phone number already exists.")
+        return phone
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
