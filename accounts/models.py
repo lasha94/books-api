@@ -10,16 +10,13 @@ class User(AbstractUser):
     username = None
     email = models.EmailField("email address", unique=True)
 
-    phone_number = models.CharField(max_length=20, blank=True)
-    bio = models.TextField(max_length=500, blank=True)
-    date_of_birth = models.DateField(null=True, blank=True)
-    is_verified = models.BooleanField(default=False)
+    phone = models.CharField(max_length=20, unique=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ["phone"]
 
     objects = UserManager()
 

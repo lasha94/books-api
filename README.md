@@ -1,125 +1,203 @@
-# DRF JWT Auth
+# Books API
 
-Django REST Framework project with a custom email-based `User` model, JWT authentication
-(`djangorestframework-simplejwt`), and interactive API docs (`drf-spectacular` — Swagger UI + Redoc).
+Books API არის Django REST Framework-ზე დაწერილია პროექტი, სადაც შესაძლებელია საკუთარი წიგნების დამატება და მართვა.
 
-## Features
+მომხმარებელს შეუძლია რეგისტრაცია, ავტორიზაცია, პროფილის მართვა, წიგნების დამატება, რედაქტირება და წაშლა. ასევე შესაძლებელია წიგნის საჯაროდ გამოქვეყნება და სხვა მომხმარებლების საჯარო წიგნების შეფასება.
 
-- Custom `User` model (`accounts.User`): email login instead of username, plus `phone_number`,
-  `bio`, `date_of_birth`, `is_verified`, `created_at`, `updated_at`.
-- JWT auth with access + refresh tokens, refresh rotation, and blacklisting on logout.
-- Endpoints: register, login, logout, refresh, view/edit profile, change password, delete account.
-- Password validation on register/change-password using Django's built-in validators
-  (min length, common password, numeric-only, similarity to user attributes) plus password-confirmation matching.
-- Swagger UI at `/api/docs/`, Redoc at `/api/redoc/`, raw OpenAPI schema at `/api/schema/`.
+## Demo
 
-## Setup
+Swagger:
+
+https://books-api.ios.ge/api/docs/
+
+Demo admin:
+
+```text
+Email: demo@admin.ge
+Password: DemoAdmin123.
+```
+
+## გამოყენებული ტექნოლოგიები
+
+- Python
+- Django
+- Django REST Framework
+- Simple JWT
+- drf-spectacular
+- django-cors-headers
+- WhiteNoise
+- Gunicorn
+- Docker
+- SQLite
+
+## ლოკალურად გაშვება
+
+კლონირება:
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+git clone -b dev https://github.com/lasha94/books-api.git
+cd books-api
+```
+
+Virtual environment:
+
+```bash
+python -m venv .venv
+```
+
+Linux / macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+პაკეტების დაყენება:
+
+```bash
 pip install -r requirements.txt
-cp .env.example .env   # edit SECRET_KEY etc.
+```
+
+.env.example ფაილის მიხედვით შექმენი .env ან დააკოპირე:
+
+Linux / macOS:
+
+```bash
+cp .env.example .env
+```
+
+Windows:
+
+```bat
+copy .env.example .env
+```
+
+Migration:
+
+```bash
 python manage.py migrate
+```
+
+superuser-ის შექმნა:
+
+```bash
 python manage.py createsuperuser
+```
+
+სერვერის გაშვება:
+
+```bash
 python manage.py runserver
 ```
 
-Then open:
-- Swagger UI: http://127.0.0.1:8000/api/docs/
-- Redoc: http://127.0.0.1:8000/api/redoc/
-- Admin: http://127.0.0.1:8000/admin/
+API:
 
-Run tests with:
+```text
+http://127.0.0.1:8000/
+```
+
+Swagger:
+
+```text
+http://127.0.0.1:8000/api/docs/
+```
+
+Django Admin:
+
+```text
+http://127.0.0.1:8000/admin/
+```
+
+## Production
+
+პროექტს აქვს `Dockerfile` და შესაძლებელია Docker-ით გაშვება.
+
+Build:
 
 ```bash
-python manage.py test
+docker build -t books-api .
 ```
 
-## API Endpoints
+Production გარემოსთვის საჭირო ცვლადები:
 
-All under `/api/auth/`.
+```env
+SECRET_KEY=your-production-secret-key
+DEBUG=False
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/register/` | No | Create a new account |
-| POST | `/login/` | No | Log in, returns `access` + `refresh` tokens and user profile |
-| POST | `/logout/` | Yes | Blacklists the given `refresh` token |
-| POST | `/token/refresh/` | No | Exchange a `refresh` token for a new `access` token |
-| GET | `/profile/` | Yes | Get the authenticated user's profile |
-| PUT/PATCH | `/profile/` | Yes | Update the authenticated user's profile |
-| PUT | `/change-password/` | Yes | Change password (requires old password) |
-| DELETE | `/delete/` | Yes | Permanently delete the account (requires current password) |
+ALLOWED_HOSTS=books-api.ios.ge
+CSRF_TRUSTED_ORIGINS=https://books-api.ios.ge
 
-### Register
+DJANGO_SUPERUSER_EMAIL=admin@example.com
+DJANGO_SUPERUSER_PHONE=+995500000000
+DJANGO_SUPERUSER_PASSWORD=your-password
+```
+
+Container-ის გაშვება:
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/auth/register/ \
-  -H "Content-Type: application/json" \
-  -d '{
-        "email": "jane@example.com",
-        "first_name": "Jane",
-        "last_name": "Doe",
-        "password": "S3curePass!23",
-        "password2": "S3curePass!23"
-      }'
+docker run -d \
+  --name books-api \
+  -p 8000:8000 \
+  --env-file .env \
+  books-api
 ```
 
-### Login
+Container-ის გაშვებისას ავტომატურად სრულდება migration და superadmin-ის შექმნა
 
-```bash
-curl -X POST http://127.0.0.1:8000/api/auth/login/ \
-  -H "Content-Type: application/json" \
-  -d '{"email": "jane@example.com", "password": "S3curePass!23"}'
+პროექტი გაშვებულია Coolify-ის გარემოში.
+
+Live API documentation:
+
+https://books-api.ios.ge/api/docs/
+
+## ძირითადი API
+
+Authentication:
+
+```text
+POST /api/auth/register/
+POST /api/auth/login/
+POST /api/auth/logout/
+POST /api/auth/token/refresh/
+
+GET  /api/auth/profile/
+PATCH /api/auth/profile/
 ```
 
-Response includes `access`, `refresh`, and `user`. Send the access token as:
+Books:
 
-```
-Authorization: Bearer <access_token>
-```
+```text
+GET    /api/books/
+POST   /api/books/
 
-### Logout
-
-```bash
-curl -X POST http://127.0.0.1:8000/api/auth/logout/ \
-  -H "Authorization: Bearer <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{"refresh": "<refresh_token>"}'
+GET    /api/books/{id}/
+PATCH  /api/books/{id}/
+DELETE /api/books/{id}/
 ```
 
-### Update profile
+Public books:
 
-```bash
-curl -X PATCH http://127.0.0.1:8000/api/auth/profile/ \
-  -H "Authorization: Bearer <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{"first_name": "Janet", "bio": "Hello world"}'
+```text
+GET /api/books/public/
+GET /api/books/public/{id}/
 ```
 
-### Change password
+Reviews:
 
-```bash
-curl -X PUT http://127.0.0.1:8000/api/auth/change-password/ \
-  -H "Authorization: Bearer <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{"old_password": "S3curePass!23", "new_password": "EvenStr0nger!45", "new_password2": "EvenStr0nger!45"}'
+```text
+GET  /api/books/public/{id}/reviews/
+POST /api/books/public/{id}/reviews/
 ```
 
-### Delete account
+## ავტორი
 
-```bash
-curl -X DELETE http://127.0.0.1:8000/api/auth/delete/ \
-  -H "Authorization: Bearer <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{"password": "EvenStr0nger!45"}'
-```
+Lasha Karaulashvili
 
-## Notes
+GitHub:
 
-- `rest_framework_simplejwt.token_blacklist` is enabled so logout actually invalidates the refresh
-  token server-side (otherwise a blacklisted-but-unexpired refresh token would still work).
-- `DEFAULT_PERMISSION_CLASSES` is `IsAuthenticated` project-wide; register/login/refresh explicitly
-  override this with `AllowAny`.
-- Swap `SQLite` for Postgres/MySQL in `config/settings.py` `DATABASES` for production use, and set
-  `DEBUG=False` with a real `SECRET_KEY` via `.env`.
+https://github.com/lasha94
