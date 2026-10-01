@@ -145,8 +145,8 @@ SIMPLE_JWT = {
 # drf-spectacular (Swagger / OpenAPI)
 # ---------------------------------------------------------------------------
 SPECTACULAR_SETTINGS = {
-    "TITLE": "DRF JWT Auth API",
-    "DESCRIPTION": "Authentication API with JWT: register, login, logout, profile edit, account deletion.",
+    "TITLE": "Books Api",
+    "DESCRIPTION": "Books Api.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
